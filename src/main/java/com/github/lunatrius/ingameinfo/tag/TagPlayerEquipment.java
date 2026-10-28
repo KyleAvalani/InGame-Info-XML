@@ -174,7 +174,7 @@ public abstract class TagPlayerEquipment extends Tag {
 
             if (value != null) {
                 value.setValue(itemStack);
-                return value.getIconSpacing();
+                return getIconTag(value);
             }
 
             InfoItem item = new InfoItem(itemStack, this.large);

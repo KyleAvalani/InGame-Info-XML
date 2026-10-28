@@ -265,7 +265,7 @@ public abstract class ValueComplex extends Value {
 
                 Info value = parent.getAttachedValue(getName());
                 if (value != null && value.getIdentifier().equals(what)) {
-                    return value.getIconSpacing();
+                    return Tag.getIconTag(value);
                 }
 
                 if ((size == 1 || size == 2) && !what.endsWith(".png")) {
@@ -294,7 +294,7 @@ public abstract class ValueComplex extends Value {
                     } else {
                         value.setIdentifier(what);
                         value.setValue(itemStack);
-                        return value.getIconSpacing();
+                        return Tag.getIconTag(value);
                     }
                 }
 
@@ -331,7 +331,7 @@ public abstract class ValueComplex extends Value {
                     return Tag.getIconTag(icon);
                 } else {
                     value.setValue(what);
-                    return value.getIconSpacing();
+                    return Tag.getIconTag(value);
                 }
             } catch (Exception e) {
                 return "?";

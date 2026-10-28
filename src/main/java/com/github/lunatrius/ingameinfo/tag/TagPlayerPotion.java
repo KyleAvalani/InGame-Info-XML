@@ -158,9 +158,9 @@ public abstract class TagPlayerPotion extends Tag {
         public @NotNull String getValue(@NotNull InfoText parent) {
             updatePotionEffects();
             if (potionEffects.length > this.index) {
-                Info value = parent.getAttachedValue(getName());
                 Potion potion = Potion.potionTypes[potionEffects[this.index].getPotionID()];
                 if (!potion.hasStatusIcon()) return "";
+                Info value = parent.getAttachedValue(getName());
                 if (shouldUpdate(value, potion.id)) {
                     InfoIcon icon;
                     if (value == null) {
@@ -180,13 +180,13 @@ public abstract class TagPlayerPotion extends Tag {
                     icon.setTextureData((i % 8) * 18, 198 + (i / 8) * 18, 18, 18, 256, 256);
 
                     if (value != null) {
-                        return value.getIconSpacing();
+                        return getIconTag(value);
                     }
 
                     parent.attachValue(getName(), icon);
                     return getIconTag(icon);
                 } else if (value != null) {
-                    return value.getIconSpacing();
+                    return getIconTag(value);
                 }
             }
 

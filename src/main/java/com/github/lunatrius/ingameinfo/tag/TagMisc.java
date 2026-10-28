@@ -189,7 +189,7 @@ public abstract class TagMisc extends Tag {
                 return getIconTag(icon);
             } else {
                 ((InfoIcon) value).setTextureData(0, 176 + pingIndex * 8, 10, 8, 256, 256);
-                return value.getIconSpacing();
+                return getIconTag(value);
             }
         }
 

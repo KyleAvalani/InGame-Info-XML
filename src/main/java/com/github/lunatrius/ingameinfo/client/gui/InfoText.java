@@ -1,6 +1,6 @@
 package com.github.lunatrius.ingameinfo.client.gui;
 
-import java.util.Iterator;
+import java.util.ArrayList;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
@@ -17,6 +17,7 @@ public class InfoText extends Info {
 
     private static final String ICON_START = "{ICON|";
     private final Map<String, Info> attachedValues = new LinkedHashMap<>();
+    private final List<Info> usedValues = new ArrayList<>();
     private String text;
     private final List<Value> values;
     private final Alignment alignment;
@@ -34,6 +35,7 @@ public class InfoText extends Info {
 
     public void update(int index) {
         this.index = index;
+        usedValues.clear();
         StringBuilder builder = new StringBuilder();
         for (Value value : this.values) {
             builder.append(getValue(value));
@@ -62,23 +64,29 @@ public class InfoText extends Info {
     }
 
     private void updateChildren(StringBuilder builder) {
-        if (builder.length() == 0 && !attachedValues.isEmpty()) {
-            attachedValues.clear();
-            return;
+        for (Info child : attachedValues.values()) {
+            child.hasPosition = false;
         }
 
-        Iterator<Info> iter = attachedValues.values().iterator();
-
-        while (builder.indexOf(ICON_START) >= 0 && iter.hasNext()) {
-            Info child = iter.next();
-            if (child.hasPosition) continue;
+        // Icons are paired with the markers in the text in the order their values were
+        // evaluated during this update, which is the order they registered themselves
+        // in usedValues. Icons from segments that no longer render never register, so
+        // any attached value that was not used in this update is dropped below instead
+        // of being drawn forever at the position of some earlier line layout.
+        int usedIndex = 0;
+        while (builder.indexOf(ICON_START) >= 0) {
             int iconStart = builder.indexOf(ICON_START);
             int widthStart = builder.indexOf("|", iconStart) + 1;
-            child.hasPosition = true;
-            child.x = fontRenderer.getStringWidth(builder.substring(0, iconStart));
+            if (usedIndex < usedValues.size()) {
+                Info child = usedValues.get(usedIndex++);
+                child.hasPosition = true;
+                child.x = fontRenderer.getStringWidth(builder.substring(0, iconStart));
+            }
             builder.replace(iconStart, widthStart, "");
             builder.deleteCharAt(builder.indexOf("}"));
         }
+
+        attachedValues.values().removeIf(child -> !usedValues.contains(child));
     }
 
     private void updatePosition() {
@@ -89,15 +97,25 @@ public class InfoText extends Info {
     }
 
     public @Nullable Info getAttachedValue(String tag) {
-        return attachedValues.get(tag);
+        Info value = attachedValues.get(tag);
+        if (value != null && !usedValues.contains(value)) {
+            usedValues.add(value);
+        }
+        return value;
     }
 
     public void removeAttachedValue(String tag) {
-        attachedValues.remove(tag);
+        Info value = attachedValues.remove(tag);
+        if (value != null) {
+            usedValues.remove(value);
+        }
     }
 
     public void attachValue(@NotNull String tag, @NotNull Info value) {
         attachedValues.put(tag, value);
+        if (!usedValues.contains(value)) {
+            usedValues.add(value);
+        }
     }
 
     @Override
